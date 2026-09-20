@@ -9,20 +9,18 @@ const connectMongo = require('connect-mongo');
 const MongoStore = connectMongo.MongoStore || connectMongo;
 const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
+const mongoose = require('mongoose');
 
-const connectDB = require('./config/db');
+const { connectDB } = require('./config/db');
 const { notFoundHandler, centralErrorHandler } = require('./middleware/errorHandler');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Trust reverse proxy (for Render and HTTPS termination)
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
-
-// Connect to MongoDB Atlas / Local Database
-connectDB();
 
 // Security Headers with Helmet (configured for Google Fonts & inline styles)
 app.use(
@@ -55,53 +53,75 @@ app.set('layout', 'layouts/main');
 app.set('layout extractScripts', true);
 app.set('layout extractStyles', true);
 
-// Configure Session Store with MongoDB
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/event_venue_booking';
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'hackathon_default_secret_event_venue_booking',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: mongoUri,
-      collectionName: 'sessions',
-      ttl: 24 * 60 * 60 // 1 day session TTL
-    }),
-    cookie: {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24, // 24 hours
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    }
-  })
-);
+/**
+ * Async server boot sequence:
+ * 1. Await database connection (Atlas URI or In-Memory)
+ * 2. Attach session store using the active connection's native client
+ * 3. Mount routes, 404, and central error handlers
+ * 4. Start HTTP listener
+ */
+const startServer = async () => {
+  // 1. Connect to database
+  await connectDB();
 
-// Flash Messages Middleware
-app.use(flash());
+  // 2. Configure Session Store using the ACTIVE Mongoose connection's MongoClient
+  const activeClient = mongoose.connection.getClient();
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'hackathon_default_secret_event_venue_booking',
+      resave: false,
+      saveUninitialized: false,
+      store: MongoStore.create({
+        client: activeClient,
+        collectionName: 'sessions',
+        ttl: 24 * 60 * 60 // 1 day session TTL
+      }),
+      cookie: {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      }
+    })
+  );
 
-// Global Template Variables
-app.use((req, res, next) => {
-  res.locals.currentUser = req.session.currentUser || null;
-  res.locals.success_msg = req.flash('success_msg');
-  res.locals.error_msg = req.flash('error_msg');
-  res.locals.info_msg = req.flash('info_msg');
-  res.locals.currentPath = req.path;
-  next();
-});
+  // 3. Flash Messages Middleware
+  app.use(flash());
 
-// Mount Routes
-app.use('/', require('./routes/index'));
+  // 4. Global Template Variables
+  app.use((req, res, next) => {
+    res.locals.currentUser = req.session.currentUser || null;
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.info_msg = req.flash('info_msg');
+    res.locals.currentPath = req.path;
+    next();
+  });
 
-// 404 Handler
-app.use(notFoundHandler);
+  // 5. Mount Application Routes
+  app.use('/', require('./routes/index'));
 
-// Centralized 500 Error Handler
-app.use(centralErrorHandler);
+  // 6. 404 Handler
+  app.use(notFoundHandler);
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`[Server] VenueSync listening on http://localhost:${PORT}`);
-  console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+  // 7. Centralized 500 Error Handler
+  app.use(centralErrorHandler);
 
-module.exports = app;
+  // 8. Start HTTP Listener
+  const server = app.listen(PORT, () => {
+    console.log(`[Server] VenueSync listening on http://localhost:${PORT}`);
+    console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+
+  return server;
+};
+
+// Start application if invoked directly
+if (require.main === module) {
+  startServer().catch(err => {
+    console.error('[Server Fatal] Startup sequence failed:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { app, startServer };

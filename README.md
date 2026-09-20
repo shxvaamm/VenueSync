@@ -115,7 +115,28 @@ PORT=3000
 NODE_ENV=development
 ```
 
-### 4. Running the Server
+### 4. Running Without a Database (In-Memory Mode)
+
+You can run and test the complete application locally without an external MongoDB Atlas cluster or local MongoDB daemon. The system includes an in-memory database fallback using `mongodb-memory-server`:
+
+1. In `.env`, leave `MONGODB_URI` blank (or omit it) and set:
+   ```env
+   USE_MEMORY_DB=true
+   ```
+2. Start the server:
+   ```bash
+   npm run dev
+   ```
+3. The server will automatically spin up an ephemeral in-memory database and output:
+   `Running on IN-MEMORY database. Data resets on restart.`
+4. To run automated tests using the in-memory database helper:
+   ```bash
+   npm test
+   ```
+
+*(Note: Production mode strictly prohibits in-memory databases and requires a persistent `MONGODB_URI`.)*
+
+### 5. Running the Server (Normal Mode)
 
 - **Development Mode (with auto-reload via nodemon):**
   ```bash
@@ -127,7 +148,7 @@ NODE_ENV=development
   npm start
   ```
 
-Visit [http://localhost:3000](http://localhost:3000) in your browser.
+Visit [http://localhost:3001](http://localhost:3001) in your browser.
 
 ---
 
