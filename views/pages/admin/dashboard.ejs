@@ -18,7 +18,9 @@
   <div class="stats-grid" style="margin-top: 0; margin-bottom: var(--space-8);">
     <div class="stat-item">
       <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.pendingCount !== undefined) ? stats.pendingCount : 0 %></div>
-      <div class="stat-label">Pending Approval Requests</div>
+      <div class="stat-label">
+        <a href="/admin/bookings?status=pending" style="color: inherit; text-decoration: underline;">Pending Approval Requests</a>
+      </div>
     </div>
     <div class="stat-item">
       <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.venuesCount !== undefined) ? stats.venuesCount : 0 %></div>
@@ -26,11 +28,15 @@
     </div>
     <div class="stat-item">
       <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.approvedCount !== undefined) ? stats.approvedCount : 0 %></div>
-      <div class="stat-label">Approved Reservations</div>
+      <div class="stat-label">
+        <a href="/admin/bookings?status=approved" style="color: inherit; text-decoration: underline;">Approved Reservations</a>
+      </div>
     </div>
     <div class="stat-item">
       <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.totalBookings !== undefined) ? stats.totalBookings : 0 %></div>
-      <div class="stat-label">Total Lifetime Bookings</div>
+      <div class="stat-label">
+        <a href="/admin/bookings" style="color: inherit; text-decoration: underline;">Total Lifetime Bookings</a>
+      </div>
     </div>
   </div>
 
@@ -42,8 +48,9 @@
     </div>
     <div class="card-body">
       <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
-        <a href="/admin/venues" class="btn btn-primary">Manage campus venues</a>
-        <a href="/admin/venues/new" class="btn btn-secondary">Add new venue</a>
+        <a href="/admin/bookings" class="btn btn-primary">Review booking requests</a>
+        <a href="/admin/venues" class="btn btn-secondary">Manage campus venues</a>
+        <a href="/admin/venues/new" class="btn btn-outline">Add new venue</a>
         <a href="/venues" class="btn btn-outline">Preview public catalog</a>
       </div>
     </div>

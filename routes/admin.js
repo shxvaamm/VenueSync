@@ -33,4 +33,7 @@ router.get('/dashboard', async (req, res, next) => {
 // Mount admin venue CRUD sub-routes
 router.use('/venues', require('./adminVenues'));
 
+// Mount admin booking management sub-routes
+router.use('/bookings', require('./adminBookings'));
+
 module.exports = router;
