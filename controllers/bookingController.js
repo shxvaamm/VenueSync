@@ -30,10 +30,11 @@ const getNewBookingForm = async (req, res, next) => {
         startTime: req.query.startTime || '10:00',
         endTime: req.query.endTime || '12:00',
         attendees: req.query.attendees || '',
-        eventName: '',
-        description: ''
+        eventName: req.query.eventName || '',
+        description: req.query.description || ''
       },
-      errors: {}
+      errors: {},
+      suggestions: null
     });
   } catch (err) {
     next(err);
@@ -72,7 +73,8 @@ const postCreateBooking = async (req, res, next) => {
         operatingHours,
         bookingLimits,
         formData,
-        errors
+        errors,
+        suggestions: null
       });
     }
 
@@ -120,7 +122,8 @@ const postCreateBooking = async (req, res, next) => {
         operatingHours,
         bookingLimits,
         formData,
-        errors
+        errors,
+        suggestions: null
       });
     }
 
@@ -132,6 +135,16 @@ const postCreateBooking = async (req, res, next) => {
     });
 
     if (!availability.available) {
+      const { getBookingSuggestions } = require('../services/suggestionService');
+      const suggestions = await getBookingSuggestions({
+        venueId: selectedVenue._id,
+        date,
+        startTime,
+        endTime,
+        attendees: attendeeCount,
+        facilities: req.body.requiredFacilities || []
+      });
+
       errors.startTime = availability.message;
       return res.status(422).render('pages/bookings/new', {
         title: 'Request Venue Booking',
@@ -141,7 +154,8 @@ const postCreateBooking = async (req, res, next) => {
         operatingHours,
         bookingLimits,
         formData,
-        errors
+        errors,
+        suggestions
       });
     }
 
