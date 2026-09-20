@@ -8,22 +8,16 @@ const Booking = require('../models/Booking');
 router.use(requireRole('admin'));
 
 // Admin Dashboard Overview
+const dashboardService = require('../services/dashboardService');
+
 router.get('/dashboard', async (req, res, next) => {
   try {
-    const venuesCount = await Venue.countDocuments();
-    const pendingCount = await Booking.countDocuments({ status: 'pending' });
-    const approvedCount = await Booking.countDocuments({ status: 'approved' });
-    const totalBookings = await Booking.countDocuments();
+    const dashboardData = await dashboardService.getDashboardData(req.query);
 
     res.render('pages/admin/dashboard', {
-      title: 'Admin Dashboard',
+      title: 'Administrator Dashboard & Analytics',
       activePage: 'admin-dashboard',
-      stats: {
-        venuesCount,
-        pendingCount,
-        approvedCount,
-        totalBookings
-      }
+      ...dashboardData
     });
   } catch (err) {
     next(err);

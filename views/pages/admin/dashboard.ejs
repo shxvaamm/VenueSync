@@ -1,49 +1,310 @@
-<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12);">
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-16);">
+  <!-- Header Title -->
   <div style="margin-bottom: var(--space-8); display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-4);">
     <div>
       <span class="hero-pill" style="margin-bottom: var(--space-2);">&#9679; Venue Manager Console</span>
-      <h1 style="margin-bottom: var(--space-2);">Administrator Dashboard</h1>
+      <h1 style="margin-bottom: var(--space-2);">Administrator Dashboard & Analytics</h1>
       <p style="margin: 0; color: var(--text-muted);">
-        Oversee campus venue allocations, review pending booking submissions, and resolve scheduling conflicts.
+        Real-time operational monitoring of campus bookings, venue utilisation, and revenue analytics.
       </p>
     </div>
-    <div>
+    <div style="display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;">
       <span class="badge badge-completed" style="padding: 0.5rem 1rem; font-size: var(--text-sm);">
-        Logged in as Admin: <%= currentUser.name %>
+        Admin: <%= currentUser.name || currentUser.email %>
       </span>
+      <a href="/admin/bookings?status=pending" class="btn btn-primary btn-sm">
+        <%= pendingCount %> Pending Request<%= pendingCount === 1 ? '' : 's' %>
+      </a>
     </div>
   </div>
 
   <!-- Metric Overview Cards -->
   <div class="stats-grid" style="margin-top: 0; margin-bottom: var(--space-8);">
     <div class="stat-item">
-      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.pendingCount !== undefined) ? stats.pendingCount : 0 %></div>
+      <div class="stat-value" style="color: <%= pendingCount > 0 ? '#d97706' : 'var(--primary)' %>;">
+        <%= pendingCount %>
+      </div>
       <div class="stat-label">
-        <a href="/admin/bookings?status=pending" style="color: inherit; text-decoration: underline;">Pending Approval Requests</a>
+        <a href="/admin/bookings?status=pending" style="color: inherit; text-decoration: underline;">
+          Pending Approval Requests
+        </a>
       </div>
     </div>
     <div class="stat-item">
-      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.venuesCount !== undefined) ? stats.venuesCount : 0 %></div>
-      <div class="stat-label">Total Campus Venues</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.approvedCount !== undefined) ? stats.approvedCount : 0 %></div>
+      <div class="stat-value" style="color: #059669;">
+        ₹<%= (totals.totalRevenue || 0).toLocaleString('en-IN') %>
+      </div>
       <div class="stat-label">
-        <a href="/admin/bookings?status=approved" style="color: inherit; text-decoration: underline;">Approved Reservations</a>
+        Period Revenue (<%= period.type === 'this-month' ? 'This Month' : (period.type === 'custom' ? 'Custom' : 'This Week') %>)
       </div>
     </div>
     <div class="stat-item">
-      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.totalBookings !== undefined) ? stats.totalBookings : 0 %></div>
+      <div class="stat-value" style="color: #4f46e5;">
+        <%= totals.overallUtilisationPercent %>%
+      </div>
       <div class="stat-label">
-        <a href="/admin/bookings" style="color: inherit; text-decoration: underline;">Total Lifetime Bookings</a>
+        Overall Utilisation (<%= totals.totalBookedHours %> / <%= totals.totalAvailableHours %> hrs)
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">
+        <%= stats.totalVenuesCount %>
+      </div>
+      <div class="stat-label">
+        <a href="/admin/venues" style="color: inherit; text-decoration: underline;">
+          Managed Campus Venues
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- Quick Admin Actions -->
+  <!-- Operational Feed: Today's Events & Upcoming Events / Pending Actions -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-10);">
+    
+    <!-- 1. Today's Events (Approved) -->
+    <div class="card">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: var(--text-base); margin: 0; display: flex; align-items: center; gap: var(--space-2);">
+          <span>&#128197;</span> Today's Approved Events
+        </h3>
+        <span class="badge badge-approved"><%= todayEvents.length %> Active</span>
+      </div>
+      <div class="card-body" style="padding: var(--space-4);">
+        <% if (todayEvents && todayEvents.length > 0) { %>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <% todayEvents.forEach(function(ev) { %>
+              <div style="padding: var(--space-3); border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-surface-alt);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-1);">
+                  <strong style="font-size: var(--text-sm);"><%= ev.eventName %></strong>
+                  <a href="/admin/bookings/<%= ev._id %>" class="btn btn-secondary btn-sm" style="font-size: var(--text-xs); padding: 0.2rem 0.5rem;">Manage</a>
+                </div>
+                <div style="font-size: var(--text-xs); color: var(--text-muted); display: flex; flex-direction: column; gap: 2px;">
+                  <span><strong>Venue:</strong> <%= ev.venue ? ev.venue.name : 'Unknown Venue' %></span>
+                  <span><strong>Time (IST):</strong> <%= formatISTSlot(ev.start, ev.end) %></span>
+                  <span><strong>Organiser:</strong> <%= ev.organiser ? (ev.organiser.name || ev.organiser.email) : 'Unknown' %></span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div style="text-align: center; padding: var(--space-8); color: var(--text-muted);">
+            <p style="margin: 0; font-size: var(--text-sm);">No events scheduled for today.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- 2. Upcoming Events (Next 7 Days) & Pending Action Banner -->
+    <div class="card">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: var(--text-base); margin: 0; display: flex; align-items: center; gap: var(--space-2);">
+          <span>&#9203;</span> Next 7 Days (<%= upcomingEvents.length %>)
+        </h3>
+        <% if (pendingCount > 0) { %>
+          <a href="/admin/bookings?status=pending" class="badge badge-pending" style="text-decoration: none;" title="Review pending booking submissions">
+            <%= pendingCount %> Needs Review &rarr;
+          </a>
+        <% } %>
+      </div>
+      <div class="card-body" style="padding: var(--space-4);">
+        <% if (pendingCount > 0) { %>
+          <div class="alert alert-warning" style="padding: var(--space-3); font-size: var(--text-xs); margin-bottom: var(--space-4);">
+            <div class="alert-content">
+              <span>&#9888;</span>
+              <div>
+                <strong>Action Required:</strong> You have <strong><%= pendingCount %></strong> pending booking request(s) waiting for review.
+                <a href="/admin/bookings?status=pending" style="font-weight: 700; text-decoration: underline; margin-left: var(--space-1);">Review requests now &rarr;</a>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (upcomingEvents && upcomingEvents.length > 0) { %>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3); max-height: 380px; overflow-y: auto;">
+            <% upcomingEvents.forEach(function(ev) { %>
+              <div style="padding: var(--space-3); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-1);">
+                  <strong style="font-size: var(--text-sm);"><%= ev.eventName %></strong>
+                  <a href="/admin/bookings/<%= ev._id %>" class="btn btn-secondary btn-sm" style="font-size: var(--text-xs); padding: 0.2rem 0.5rem;">Details</a>
+                </div>
+                <div style="font-size: var(--text-xs); color: var(--text-muted); display: flex; flex-direction: column; gap: 2px;">
+                  <span><strong>Venue:</strong> <%= ev.venue ? ev.venue.name : 'Unknown Venue' %></span>
+                  <span><strong>Time (IST):</strong> <%= formatISTSlot(ev.start, ev.end) %></span>
+                  <span><strong>Organiser:</strong> <%= ev.organiser ? (ev.organiser.name || ev.organiser.email) : 'Unknown' %></span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div style="text-align: center; padding: var(--space-8); color: var(--text-muted);">
+            <p style="margin: 0; font-size: var(--text-sm);">No upcoming approved events in the next 7 days.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Analytics Section Header with Period Controls -->
+  <div class="card" style="margin-bottom: var(--space-6);">
+    <div class="card-body" style="padding: var(--space-5);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4);">
+        <div>
+          <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-1);">Venue Utilisation & Revenue Analytics</h2>
+          <span style="font-size: var(--text-xs); color: var(--text-muted);">
+            Active Period: <strong><%= period.label %></strong> (Hours 08:00 – 22:00 IST daily; maintenance days excluded)
+          </span>
+        </div>
+
+        <!-- Period Toggle Buttons -->
+        <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+          <a href="/admin/dashboard?period=this-week" class="btn btn-sm <%= period.type === 'this-week' ? 'btn-primary' : 'btn-secondary' %>">
+            This Week
+          </a>
+          <a href="/admin/dashboard?period=this-month" class="btn btn-sm <%= period.type === 'this-month' ? 'btn-primary' : 'btn-secondary' %>">
+            This Month
+          </a>
+        </div>
+      </div>
+
+      <!-- Custom Date Filter Accordion / Inline Form -->
+      <form action="/admin/dashboard" method="GET" style="margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--border-light); display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap;">
+        <input type="hidden" name="period" value="custom">
+        <div class="form-group" style="margin-bottom: 0; min-width: 160px;">
+          <label for="startDate" class="form-label" style="font-size: var(--text-xs);">Custom Start Date (IST)</label>
+          <input type="date" name="startDate" id="startDate" class="form-control" value="<%= period.startDateStr %>" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 0; min-width: 160px;">
+          <label for="endDate" class="form-label" style="font-size: var(--text-xs);">Custom End Date (IST)</label>
+          <input type="date" name="endDate" id="endDate" class="form-control" value="<%= period.endDateStr %>" required>
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm">
+          Apply Custom Range
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chart.js Visualizations (Utilisation % & Revenue) -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
+    
+    <!-- Chart 1: Venue Utilisation Rate (%) -->
+    <div class="card">
+      <div class="card-header">
+        <h3 style="font-size: var(--text-base); margin: 0;">Venue Utilisation Rate (%)</h3>
+      </div>
+      <div class="card-body" style="padding: var(--space-4);">
+        <div style="position: relative; height: 280px;">
+          <canvas id="utilisationChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 2: Revenue per Venue (₹) -->
+    <div class="card">
+      <div class="card-header">
+        <h3 style="font-size: var(--text-base); margin: 0;">Revenue by Venue (₹)</h3>
+      </div>
+      <div class="card-body" style="padding: var(--space-4);">
+        <div style="position: relative; height: 280px;">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Comprehensive Venue Utilisation & Revenue Table -->
   <div class="card">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-      <h3 style="font-size: var(--text-lg); margin: 0;">Venue Manager Operational Actions</h3>
+      <h3 style="font-size: var(--text-base); margin: 0;">Venue Analytics & Operational Hours Breakdown</h3>
+      <span style="font-size: var(--text-xs); color: var(--text-muted);"><%= period.label %></span>
+    </div>
+    <div class="table-container">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Venue Name</th>
+            <th>Capacity & Rate</th>
+            <th>Operating Days</th>
+            <th>Available Hours</th>
+            <th>Booked Hours</th>
+            <th>Utilisation Rate</th>
+            <th style="text-align: right;">Period Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (venueMetrics && venueMetrics.length > 0) { %>
+            <% venueMetrics.forEach(function(v) { %>
+              <tr>
+                <td>
+                  <strong><%= v.venueName %></strong>
+                  <% if (v.maintenanceDays > 0) { %>
+                    <span style="display: block; font-size: var(--text-xs); color: #b45309;">
+                      &#9888; <%= v.maintenanceDays %> maintenance-blocked day<%= v.maintenanceDays === 1 ? '' : 's' %> excluded
+                    </span>
+                  <% } %>
+                </td>
+                <td>
+                  <span style="font-size: var(--text-xs);">
+                    <%= v.capacity %> seats &bull; ₹<%= v.hourlyRate %>/hr
+                  </span>
+                </td>
+                <td>
+                  <%= v.activeOperatingDays %> of <%= v.totalDays %> days
+                </td>
+                <td>
+                  <strong><%= v.availableOperatingHours %> hrs</strong>
+                </td>
+                <td>
+                  <strong><%= v.bookedHours %> hrs</strong>
+                </td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <div style="flex: 1; min-width: 60px; height: 8px; background-color: var(--border-light); border-radius: 4px; overflow: hidden;">
+                      <div style="height: 100%; width: <%= Math.min(100, v.utilisationPercent) %>%; background-color: <%= v.utilisationPercent > 50 ? '#059669' : (v.utilisationPercent > 20 ? '#4f46e5' : '#94a3b8') %>;"></div>
+                    </div>
+                    <span style="font-size: var(--text-xs); font-weight: 700; min-width: 42px;">
+                      <%= v.utilisationPercent %>%
+                    </span>
+                  </div>
+                </td>
+                <td style="text-align: right; font-weight: 700;">
+                  ₹<%= v.revenue.toLocaleString('en-IN') %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" style="text-align: center; padding: var(--space-12); color: var(--text-muted);">
+                No venue metrics available for this period.
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+        <% if (venueMetrics && venueMetrics.length > 0) { %>
+          <tfoot style="background-color: var(--bg-surface-alt); font-weight: 700;">
+            <tr>
+              <td colspan="3">Overall Campus Totals</td>
+              <td><%= totals.totalAvailableHours %> hrs</td>
+              <td><%= totals.totalBookedHours %> hrs</td>
+              <td>
+                <span class="badge badge-completed"><%= totals.overallUtilisationPercent %>%</span>
+              </td>
+              <td style="text-align: right; color: #059669; font-size: var(--text-base);">
+                ₹<%= totals.totalRevenue.toLocaleString('en-IN') %>
+              </td>
+            </tr>
+          </tfoot>
+        <% } %>
+      </table>
+    </div>
+  </div>
+
+  <!-- Operational Actions Quick Navigation -->
+  <div class="card" style="margin-top: var(--space-8);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: var(--text-base); margin: 0;">Venue Manager Operational Actions</h3>
       <span class="badge badge-approved">System Active</span>
     </div>
     <div class="card-body">
@@ -56,3 +317,121 @@
     </div>
   </div>
 </div>
+
+<!-- Chart.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const venueMetrics = <%- JSON.stringify(venueMetrics || []) %>;
+
+    if (!venueMetrics || venueMetrics.length === 0) return;
+
+    // Shorten long venue names for chart readability
+    const labels = venueMetrics.map(v => {
+      if (v.venueName.length > 18) {
+        return v.venueName.substring(0, 16) + '...';
+      }
+      return v.venueName;
+    });
+
+    const utilisationData = venueMetrics.map(v => v.utilisationPercent);
+    const revenueData = venueMetrics.map(v => v.revenue);
+
+    // 1. Utilisation Chart
+    const ctxUtil = document.getElementById('utilisationChart');
+    if (ctxUtil) {
+      new Chart(ctxUtil, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Utilisation Rate (%)',
+            data: utilisationData,
+            backgroundColor: 'rgba(79, 70, 229, 0.75)',
+            borderColor: 'rgb(79, 70, 229)',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 10 }
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'Utilisation: ' + context.parsed.y + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Revenue Chart
+    const ctxRev = document.getElementById('revenueChart');
+    if (ctxRev) {
+      new Chart(ctxRev, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Revenue (₹)',
+            data: revenueData,
+            backgroundColor: 'rgba(5, 150, 105, 0.75)',
+            borderColor: 'rgb(5, 150, 105)',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '₹' + value.toLocaleString('en-IN');
+                }
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 10 }
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
