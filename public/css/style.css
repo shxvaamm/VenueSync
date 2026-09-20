@@ -443,6 +443,19 @@ a:hover {
   margin-top: var(--space-1);
 }
 
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
+
 /* ==========================================================================
    Cards
    ========================================================================== */
@@ -853,21 +866,99 @@ a:hover {
 }
 
 /* ==========================================================================
-   Responsive Breakpoints
+   Responsive Breakpoints & Phone UI Polish
    ========================================================================== */
 @media (max-width: 768px) {
+  .site-header {
+    position: static;
+  }
+
+  .nav-wrapper {
+    flex-direction: column;
+    height: auto;
+    padding: var(--space-3) var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .brand-logo {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .nav-links {
-    display: none; /* Will be toggled or responsive */
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    width: 100%;
+    justify-content: flex-start;
+    padding: var(--space-2) 0;
+    border-top: 1px solid var(--border-light);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  
+
+  .nav-link {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-3);
+    background: var(--bg-surface-alt);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+  }
+
+  .nav-link.active {
+    background: var(--primary-100);
+    color: var(--primary-700);
+    font-weight: 700;
+  }
+
+  .nav-link.active::after {
+    display: none;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--space-1);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
   .hero-section {
-    padding: var(--space-10) 0;
+    padding: var(--space-8) 0;
+    text-align: center;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
-  
+
+  .venue-grid, .preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar, .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .card-footer .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
   .footer-content {
     flex-direction: column;
     text-align: center;
@@ -876,5 +967,32 @@ a:hover {
   .footer-bottom {
     flex-direction: column;
     gap: var(--space-3);
+    text-align: center;
   }
 }
+
+@media (max-width: 480px) {
+  .container {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .hero-title {
+    font-size: var(--text-3xl);
+  }
+
+  .btn {
+    min-height: 42px;
+    font-size: var(--text-sm);
+  }
+
+  .table th, .table td {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+  }
+}
+

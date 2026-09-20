@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
+const morgan = require('morgan');
 const methodOverride = require('method-override');
 const session = require('express-session');
 const connectMongo = require('connect-mongo');
@@ -20,6 +21,11 @@ const PORT = process.env.PORT || 3001;
 // Trust reverse proxy (for Render and HTTPS termination)
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
+}
+
+// HTTP Request Logging in Development
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
 }
 
 // Security Headers with Helmet (configured for Google Fonts & inline styles)
@@ -120,6 +126,15 @@ const startServer = async () => {
   return server;
 };
 
+// Process-level unhandled error safety guards
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Process] Unhandled Promise Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Uncaught Exception thrown:', err);
+});
+
 // Start application if invoked directly
 if (require.main === module) {
   startServer().catch(err => {
@@ -129,3 +144,4 @@ if (require.main === module) {
 }
 
 module.exports = { app, startServer };
+

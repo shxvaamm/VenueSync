@@ -1,100 +1,153 @@
 # Event & Venue Booking Management System (VenueSync)
 
-An enterprise-grade campus and community event and venue booking management platform built with Node.js, Express, EJS, and MongoDB Atlas. Designed for conflict-free slot scheduling, transparent review pipelines, and role-based workflows.
+An enterprise-grade campus and community event and venue booking management platform built with **Node.js, Express.js, EJS, and MongoDB**. Designed for real-time conflict-free slot scheduling, automated overlap detection, transparent administrative review pipelines, and smart recommendation alternatives when spaces or slots are contested.
 
 ---
 
-## 🚀 Tech Stack
+## 🌟 Overview & Key Highlights
 
-- **Frontend:** Server-Side Rendered (SSR) with EJS and `express-ejs-layouts`, custom modern CSS design system, minimal vanilla JavaScript for micro-interactions.
-- **Backend:** Node.js & Express.js (MVC architecture).
-- **Database:** MongoDB Atlas via Mongoose with `connect-mongo` session persistence.
-- **Authentication & Security:** Session-based authentication (`express-session` + `connect-mongo`), `bcryptjs` for salted password hashing, `helmet` for HTTP security headers, and `express-validator`.
-- **Utilities:** `dotenv` for environment configuration, `connect-flash` for flash alerts, `method-override` for RESTful verb support.
-- **Deployment Target:** Render (`web` service).
-
----
-
-## 👥 User Roles
-
-1. **Organiser:**
-   - Self-registers through public onboarding.
-   - Searches and inspects campus venues.
-   - Requests bookings with real-time validation.
-   - Tracks personal booking history and approval status.
-
-2. **Admin (Venue Manager):**
-   - Provisioned **strictly** via an administrative seed script (`npm run seed:admin`), never through public registration.
-   - Manages venue inventories, capacity, and equipment availability.
-   - Reviews, approves, or rejects booking requests with reason tracking.
-   - Resolves booking conflicts and enforces campus policy.
+VenueSync streamlines the complete lifecycle of campus space reservations across auditoriums, seminar halls, computer labs, and open-air amphitheaters:
+- **Zero Double-Bookings:** Strict mathematical interval overlap detection prevents concurrent approved bookings.
+- **Maintenance Awareness:** Scheduled maintenance intervals actively block slot availability.
+- **Smart Conflict Alternatives:** When a requested slot or venue is contested, the system automatically computes free alternative time windows and available alternative spaces with one-click pre-filled booking links.
+- **Dual-Mode Persistence:** Seamlessly boots either against a live MongoDB Atlas cluster or with an embedded zero-setup In-Memory database (`mongodb-memory-server`).
+- **Comprehensive Analytics:** Administrative dashboard tracking room utilisation rates, revenue aggregations, and upcoming event schedules.
 
 ---
 
-## ⚙️ Campus System Configuration (`config/settings.js`)
+## 👥 Features by Role
 
-- **Operating Hours:** `08:00` to `22:00` (8:00 AM &ndash; 10:00 PM IST)
-- **Timezone:** `Asia/Kolkata` (Indian Standard Time)
-- **Minimum Booking Duration:** `1 hour`
-- **Maximum Booking Duration:** `12 hours`
+### 1. Organiser
+- **Self-Registration & Authentication:** Secure registration with password complexity enforcement, bcrypt hashing, session-based auth, and rate-limiting.
+- **Venue Catalog & Advanced Discovery:**
+  - Search by minimum capacity, hourly rate cap, and multi-equipment selection (*must match all selected*).
+  - Search by intended date and time window to preview only available spaces.
+  - Interactive venue detail view showing capacities, equipment tags, and scheduled maintenance blocks.
+- **Reservation Requests:**
+  - Pre-filled venue reservation form with real-time cost estimation in Indian Rupees (₹).
+  - Client and server-side validation against campus operating hours (`08:00` to `22:00` IST) and booking duration limits (1 to 12 hours).
+  - Attendees bounded by venue seating capacity.
+- **Smart Suggestions on Conflict:**
+  - If a slot is taken by an approved reservation or maintenance block, view up to 5 alternative free slots at the same venue (ordered by closeness to requested time) and up to 5 alternative venues matching capacity and facilities.
+  - One-click **"Use this slot"** or **"Book this venue"** buttons that return to the form pre-filled and re-validated.
+- **Personal Booking Dashboard (`/bookings/my`):**
+  - Track all submitted requests across statuses: `pending`, `approved`, `rejected`, `completed`, and `cancelled`.
+  - Cancel any pending request or future approved reservation with one click.
+
+### 2. Admin (Venue Manager)
+- **Restricted Administrative Access:** Admin accounts can **only** be provisioned through administrative seed scripts, never via public registration.
+- **Venue Management (CRUD):**
+  - Create, inspect, edit, and soft delete venues.
+  - Toggle venue active/inactive status.
+  - Schedule and remove maintenance intervals with customized reasons.
+  - Guard against deleting venues that have active future commitments.
+- **Booking Review & Decision Pipeline (`/admin/bookings`):**
+  - Paginated queue of all campus bookings with multi-criteria filters (status, venue, date range).
+  - Detailed booking inspection view with organiser identity and event scope.
+  - **Atomic Approval:** Re-validates slot availability at the moment of approval to resolve racing pending requests.
+  - **Cascade Warning:** Upon approving a request, warns the manager of other pending requests that now clash, with one-click rejection shortcuts.
+  - Provide optional decision notes for audit trails.
+  - State machine lifecycle: mark past approved events as `completed`, or cancel approved bookings when emergency maintenance arises.
+- **Analytics & Utilisation Dashboard (`/admin/dashboard`):**
+  - Today's active events schedule in IST.
+  - Next 7 days forecast and urgent pending review banners.
+  - Period-based room utilisation rates (booked hours / operational hours excluding maintenance days) for `This Week`, `This Month`, or custom dates.
+  - Revenue aggregation (total campus revenue and venue breakdown).
 
 ---
 
-## 📁 Project Structure (MVC)
+## 🛠️ Technology Stack
+
+- **Runtime & Framework:** Node.js (v18+) & Express.js 5
+- **Template Engine:** EJS (Server-Side Rendered) with `express-ejs-layouts`
+- **Styling:** Custom Vanilla CSS Design System with responsive mobile breakpoints, modern typography (*Space Grotesk* + *Plus Jakarta Sans*), and accessible focus states
+- **Database & ODM:** MongoDB & Mongoose 9
+- **Session Management:** `express-session` backed by `connect-mongo` (supports active in-memory and Atlas connections)
+- **Security & Hardening:**
+  - `helmet`: Content Security Policy and HTTP security headers
+  - `bcryptjs`: Salted password hashing (cost factor 10)
+  - `express-validator`: Server-side input sanitization and schema verification
+  - `express-rate-limit`: Brute-force protection on `/auth/login` and `/auth/register`
+- **Development & Logging:** `morgan` for HTTP request logging in development, `dotenv` for environment variables, `nodemon` for auto-reloading
+
+---
+
+## 📁 Folder Structure (MVC)
 
 ```text
 assignment2/
 ├── config/
-│   ├── db.js                 # MongoDB connection logic
-│   └── settings.js           # Operating hours, timezone, and duration limits
+│   ├── db.js                 # Unified database connection (MongoDB Atlas vs In-Memory)
+│   └── settings.js           # Campus operating hours (08:00-22:00), IST timezone, limits
 ├── controllers/
-│   └── homeController.js     # Home & landing page controller
+│   ├── adminBookingController.js  # Admin booking review, decisions, and lifecycle
+│   ├── adminVenueController.js    # Admin venue CRUD & maintenance block management
+│   ├── authController.js          # Authentication (register, login, logout)
+│   ├── bookingController.js       # Organiser reservation form, submission, & personal bookings
+│   ├── homeController.js          # Landing page showcase
+│   └── venueBrowseController.js   # Public/organiser venue search & filters
 ├── middleware/
-│   └── errorHandler.js       # 404 and central error handling middleware
+│   ├── auth.js               # requireLogin, requireRole('admin'|'organiser'), requireGuest
+│   ├── errorHandler.js       # Accessible 404 & centralized 500 error handlers
+│   ├── rateLimiter.js        # Rate limiting on authentication endpoints
+│   └── validators.js         # express-validator schemas for auth forms
 ├── models/
-│   └── .gitkeep              # Mongoose schemas (Phase 2)
+│   ├── Booking.js            # Booking schema, compound indexes, and status enum
+│   ├── User.js               # User accounts with password hashing & compare methods
+│   └── Venue.js              # Venue schema with facilities and embedded maintenance blocks
 ├── public/
 │   ├── css/
-│   │   └── style.css         # Custom design system tokens, typography, and components
+│   │   └── style.css         # Complete design system tokens, responsive mobile rules
 │   └── js/
-│       └── main.js           # Vanilla JS client utilities (alert dismissals, etc.)
+│       └── main.js           # Vanilla JS helpers (alert dismissals, dialogs)
 ├── routes/
-│   └── index.js              # Central application routes
+│   ├── admin.js              # Admin root and dashboard routing
+│   ├── adminBookings.js      # Admin booking action routes
+│   ├── adminVenues.js        # Admin venue management routes
+│   ├── auth.js               # Authentication endpoints
+│   ├── bookings.js           # Organiser reservation routes
+│   ├── index.js              # Public root routes
+│   └── venues.js             # Public venue exploration routes
 ├── seed/
-│   └── .gitkeep              # Seed scripts (Phase 2 Admin provisioner)
+│   └── seed.js               # Comprehensive idempotent database seed script
 ├── services/
-│   └── .gitkeep              # Reusable domain business logic
+│   ├── availabilityService.js     # Mathematical interval overlap & maintenance checking
+│   ├── dashboardService.js        # Utilisation and revenue analytics calculations
+│   ├── suggestionService.js       # Alternative slot & alternative venue recommendation engine
+│   ├── timeHelper.js              # IST <-> UTC date conversions and formatters
+│   └── venueSearchService.js      # MongoDB query builder for venue search
+├── tests/
+│   ├── adminBookings.test.js      # Admin filtering and status transition tests
+│   ├── auth.test.js               # Auth, password hashing, and middleware guards
+│   ├── availability.test.js       # Overlap formulas, back-to-back allowance, maintenance
+│   ├── bookingStatus.test.js      # State machine rules and approval re-checks
+│   ├── dashboard.test.js          # Hand-checked utilisation and revenue calculations
+│   ├── inMemoryDb.test.js         # In-memory database connectivity tests
+│   ├── suggestions.test.js        # Alternative slot windows and venue ranking tests
+│   ├── venueModel.test.js         # Venue schema, constraints, and maintenance blocks
+│   └── venueSearch.test.js        # Filter queries (capacity, facilities, price cap)
 ├── views/
-│   ├── errors/
-│   │   ├── 404.ejs           # Accessible 404 page with action buttons
-│   │   └── 500.ejs           # Central error page with developer traces in dev mode
-│   ├── layouts/
-│   │   └── main.ejs          # Master layout with skip link, header, flash, & footer
-│   ├── pages/
-│   │   └── index.ejs         # Landing page and design system showcase
-│   └── partials/
-│       ├── flash.ejs         # Styled flash message alerts
-│       ├── footer.ejs        # Footer with operational hours and policy
-│       └── header.ejs        # Role-aware navigation (Guest, Organiser, Admin)
-├── .env.example              # Template for environment variables
-├── .gitignore                # Production git ignore rules
-├── package.json              # Project metadata, dependencies, and scripts
-├── README.md                 # Project documentation
-└── server.js                 # Application entrypoint
+│   ├── errors/               # 403, 404, and 500 error views
+│   ├── layouts/              # Master EJS layout (main.ejs)
+│   ├── pages/                # Application views (admin, auth, bookings, venues)
+│   └── partials/             # Header, footer, and flash message partials
+├── .env.example              # Environment configuration template
+├── package.json              # Project dependencies and npm scripts
+└── server.js                 # Express application bootloader
 ```
 
 ---
 
-## 🛠️ Quick Start
+## ⚡ Setup & Quickstart
 
 ### 1. Prerequisites
-- Node.js (v18+ recommended)
-- MongoDB instance (local `mongod` on port 27017 or a MongoDB Atlas connection URI)
+- Node.js (v18 or higher recommended)
+- npm (v9 or higher)
 
 ### 2. Installation
 ```bash
-# Clone repository
-git clone <repo-url>
+# Clone the repository
+git clone <repository-url>
 cd assignment2
 
 # Install dependencies
@@ -102,60 +155,104 @@ npm install
 ```
 
 ### 3. Environment Configuration
-Copy `.env.example` to `.env` and set your secrets:
+Create a `.env` file from `.env.example`:
 ```bash
 cp .env.example .env
 ```
 
-Ensure `.env` contains:
+Review the `.env` variables:
 ```env
-MONGODB_URI=mongodb://127.0.0.1:27017/event_venue_booking
-SESSION_SECRET=your_super_secret_session_key
-PORT=3000
+# Application Port
+PORT=3001
+
+# Environment ('development' or 'production')
 NODE_ENV=development
+
+# Session Encryption Key
+SESSION_SECRET=venue_sync_secure_development_secret_key_2026
+
+# Database Configuration:
+# Leave blank to use the built-in IN-MEMORY database (Default for development)
+# Or provide a MongoDB Atlas connection URI:
+# MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/venuesync
+USE_MEMORY_DB=true
 ```
-
-### 4. Running Without a Database (In-Memory Mode)
-
-You can run and test the complete application locally without an external MongoDB Atlas cluster or local MongoDB daemon. The system includes an in-memory database fallback using `mongodb-memory-server`:
-
-1. In `.env`, leave `MONGODB_URI` blank (or omit it) and set:
-   ```env
-   USE_MEMORY_DB=true
-   ```
-2. Start the server:
-   ```bash
-   npm run dev
-   ```
-3. The server will automatically spin up an ephemeral in-memory database and output:
-   `Running on IN-MEMORY database. Data resets on restart.`
-4. To run automated tests using the in-memory database helper:
-   ```bash
-   npm test
-   ```
-
-*(Note: Production mode strictly prohibits in-memory databases and requires a persistent `MONGODB_URI`.)*
-
-### 5. Running the Server (Normal Mode)
-
-- **Development Mode (with auto-reload via nodemon):**
-  ```bash
-  npm run dev
-  ```
-
-- **Production Mode:**
-  ```bash
-  npm start
-  ```
-
-Visit [http://localhost:3001](http://localhost:3001) in your browser.
 
 ---
 
-## 🎨 Design System Highlights (`public/css/style.css`)
-- **Typography:** Distinctive modern combination of *Space Grotesk* for headings and *Plus Jakarta Sans* for clean, legible body text.
-- **Palette:** Slate & Deep Indigo `#4338ca` paired with semantic tokens.
-- **Status Badges:** Explicit styles for `Pending`, `Approved`, `Rejected`, `Completed`, and `Cancelled`.
-- **Buttons:** Action-focused button labelling ("Save venue", "Cancel reservation", "Request reservation").
-- **Form Error Feedback:** Contextual inline error messages detailing what failed and how to remedy it.
-- **Accessibility:** Visible focus rings (`:focus-visible`), skip-to-content links, and high contrast text ratios.
+## 💾 In-Memory Mode vs Real Database Mode
+
+| Feature | In-Memory Mode (`USE_MEMORY_DB=true`) | Real Database Mode (`MONGODB_URI=...`) |
+| :--- | :--- | :--- |
+| **Setup Required** | None. Zero configuration required. | MongoDB Atlas cluster or local MongoDB service. |
+| **Under the Hood** | `mongodb-memory-server` spins up a dedicated binary. | Native Mongoose connection to external replica set. |
+| **Data Lifecycle** | Reset cleanly upon server restart. Auto-seeded on start. | Persists across server restarts. |
+| **Production Use** | **Strictly Forbidden.** Server will refuse to boot if `NODE_ENV=production` without `MONGODB_URI`. | **Required** for production deployment (Render). |
+
+---
+
+## 🔑 Seed Command & Demo Credentials
+
+When running in in-memory mode, the server automatically executes `seedDatabase()` on startup. You can also manually trigger the seed script:
+```bash
+npm run seed
+```
+
+### Ready-to-Use Accounts:
+
+| Role | Email | Password | Access Rights |
+| :--- | :--- | :--- | :--- |
+| **Admin (Venue Manager)** | `admin@venue.test` | `Admin@123` | Full dashboard, venue CRUD, booking approvals/rejections |
+| **Organiser 1** | `organiser1@venue.test` | `Org@12345` | Venue browsing, reservation requests, booking cancellations |
+| **Organiser 2** | `organiser2@venue.test` | `Org@12345` | Second organiser for multi-user conflict simulations |
+
+---
+
+## 🧪 Running Automated Tests
+
+VenueSync comes with a comprehensive suite of unit and integration tests executing with Node's native test runner (`node --test`). Tests run against isolated in-memory instances:
+
+```bash
+npm test
+```
+
+### Test Coverage Highlights:
+- **`tests/availability.test.js`**: Exact overlaps, partial start/end overlaps, fully contained slots, back-to-back allowance, maintenance block conflicts, and exclusion of pending bookings.
+- **`tests/suggestions.test.js`**: Free slot generation within operational hours (`08:00–22:00 IST`), multi-day forward searches, and venue ranking algorithms (closest capacity fit, then lowest cost).
+- **`tests/bookingStatus.test.js`**: Allowed/forbidden lifecycle state machine transitions, completion guards, and approval re-checks.
+- **`tests/dashboard.test.js`**: Hand-verified mathematical calculations for room utilisation percentage and revenue aggregations.
+- **`tests/venueSearch.test.js`**: Multi-facility `$all` query verification, capacity filtering, and price caps.
+- **`tests/auth.test.js`**: Route access controls, password verification, and role-based redirects.
+
+---
+
+## 📐 How Overlap Prevention & Suggestions Work
+
+### 1. Mathematical Interval Overlap Rule
+A proposed booking slot $[T_{\text{start}}, T_{\text{end}}]$ conflicts with an existing reservation $[E_{\text{start}}, E_{\text{end}}]$ if and only if:
+$$\left(T_{\text{start}} < E_{\text{end}}\right) \land \left(T_{\text{end}} > E_{\text{start}}\right)$$
+
+**Key Properties:**
+- **Approved Only:** Only bookings with status `approved` block a slot. Pending requests do **not** block other users from requesting the same slot.
+- **Back-to-Back Allowed:** When $T_{\text{end}} = E_{\text{start}}$ or $T_{\text{start}} = E_{\text{end}}$, the formula evaluates to `false`. Back-to-back reservations without gaps are completely valid.
+- **Maintenance Blocking:** Venue maintenance intervals $[M_{\text{from}}, M_{\text{to}}]$ are evaluated using the identical overlap condition.
+- **Timezone Normalization:** All user inputs in Indian Standard Time (IST, UTC+05:30) are converted to canonical UTC timestamps before query evaluation.
+
+### 2. Smart Suggestion Engine (`services/suggestionService.js`)
+When a booking request conflicts with an existing approved event or maintenance block:
+1. **Alternative Slots at Same Venue:**
+   - Scans the requested day from `08:00` to `22:00` IST in 30-minute intervals for free windows matching the requested duration.
+   - Searches the subsequent 2 calendar days for available slots.
+   - Computes time distance from the user's requested start time:
+     $$\Delta t = |S_{\text{suggested}} - S_{\text{requested}}|$$
+   - Orders suggestions by closeness to the user's initial preference (up to 5 slots).
+2. **Alternative Venues at Requested Time:**
+   - Finds all active campus venues that are completely free at the user's requested time window.
+   - Filters out venues with insufficient seating capacity (`capacity < attendees`) or missing any required equipment.
+   - Ranks candidate venues using a two-tier sorting algorithm:
+     1. **Closest Capacity Match:** Minimizes wasted seats $(C_{\text{venue}} - A_{\text{attendees}})$ ascending.
+     2. **Lowest Total Cost:** Breaks capacity ties by total cost $(\text{hourlyRate} \times \text{durationHours})$ ascending.
+3. **One-Click Pre-Filled Booking:**
+   - Every suggestion renders a direct action button: **"Use this slot &rarr;"** or **"Book this venue &rarr;"**.
+   - Preserves all entered data (event title, description, attendees, date, time) in query parameters.
+   - Full server-side re-validation is executed upon submission to prevent race conditions.
