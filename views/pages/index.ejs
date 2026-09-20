@@ -1,0 +1,275 @@
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-pill">
+      <span>&#9679;</span> Phase 1 Architecture &amp; Design System Active
+    </div>
+    <h1 class="hero-title">
+      Campus Event &amp; Venue Booking <br>
+      <span class="highlight">Simplified &amp; Conflict-Free</span>
+    </h1>
+    <p class="hero-subtitle">
+      Streamlining auditorium, seminar hall, and open-ground bookings with instant slot validation, clear approval pipelines, and transparent role-based access.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#system-components" class="btn btn-primary btn-lg">Explore design system</a>
+      <a href="/test-flash" class="btn btn-secondary btn-lg">Test flash messages</a>
+      <a href="/404-preview" class="btn btn-outline btn-lg">View 404 page</a>
+    </div>
+
+    <!-- Operating Parameters Overview -->
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-value">08:00 &ndash; 22:00</div>
+        <div class="stat-label">Operating Hours (IST)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">1h &ndash; 12h</div>
+        <div class="stat-label">Min / Max Booking Duration</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">2 Roles</div>
+        <div class="stat-label">Organiser &amp; Venue Manager</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">Asia/Kolkata</div>
+        <div class="stat-label">Standard Campus Timezone</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Role Preview Section (Demonstrates Dynamic Navigation) -->
+<section class="container" style="margin-bottom: var(--space-12);">
+  <div class="card" style="border-left: 4px solid var(--primary-500); background-color: var(--primary-50);">
+    <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+      <div>
+        <h4 style="color: var(--primary-700); margin-bottom: var(--space-1);">Role-Aware Navigation Test</h4>
+        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0;">
+          The header navigation dynamically updates based on active session role. Toggle preview role:
+        </p>
+      </div>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <a href="/?preview_role=guest" class="btn btn-secondary btn-sm <%= (!currentUser) ? 'btn-primary' : '' %>">Preview as Guest</a>
+        <a href="/?preview_role=organiser" class="btn btn-secondary btn-sm <%= (currentUser && currentUser.role === 'organiser') ? 'btn-primary' : '' %>">Preview as Organiser</a>
+        <a href="/?preview_role=admin" class="btn btn-secondary btn-sm <%= (currentUser && currentUser.role === 'admin') ? 'btn-primary' : '' %>">Preview as Venue Manager</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Design System Showcase -->
+<section id="system-components" class="features-section">
+  <div class="container">
+    <div class="features-header">
+      <h2>Design System Tokens &amp; Components</h2>
+      <p>Custom-crafted palette, typography, interactive states, and semantic status elements built without generic framework defaults.</p>
+    </div>
+
+    <!-- Status Badges Showcase -->
+    <div class="card" style="margin-bottom: var(--space-8);">
+      <div class="card-header">
+        <h3 style="font-size: var(--text-lg); margin: 0;">1. Booking Status Badges</h3>
+      </div>
+      <div class="card-body" style="display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center;">
+        <span class="badge badge-pending">Pending Review</span>
+        <span class="badge badge-approved">Approved</span>
+        <span class="badge badge-rejected">Rejected</span>
+        <span class="badge badge-completed">Completed</span>
+        <span class="badge badge-cancelled">Cancelled</span>
+      </div>
+    </div>
+
+    <!-- Buttons & Action Hierarchy Showcase -->
+    <div class="card" style="margin-bottom: var(--space-8);">
+      <div class="card-header">
+        <h3 style="font-size: var(--text-lg); margin: 0;">2. Action-Oriented Buttons</h3>
+        <p class="form-help">Buttons clearly state their precise action ("Save venue", "Request booking") rather than ambiguous defaults.</p>
+      </div>
+      <div class="card-body" style="display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center;">
+        <button type="button" class="btn btn-primary">Save venue</button>
+        <button type="button" class="btn btn-secondary">Download schedule</button>
+        <button type="button" class="btn btn-outline">Check availability</button>
+        <button type="button" class="btn btn-danger">Cancel reservation</button>
+        <button type="button" class="btn btn-primary btn-sm">Quick reserve</button>
+        <button type="button" class="btn btn-primary" disabled>Saving venue...</button>
+      </div>
+    </div>
+
+    <!-- Forms & Inline Errors Showcase -->
+    <div class="card" style="margin-bottom: var(--space-8);">
+      <div class="card-header">
+        <h3 style="font-size: var(--text-lg); margin: 0;">3. Form Fields &amp; Inline Error Validation</h3>
+        <p class="form-help">Error messages explain what went wrong and provide actionable guidance on how to fix it.</p>
+      </div>
+      <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-6);">
+          <!-- Valid Field -->
+          <div class="form-group">
+            <label for="venue-name" class="form-label">Venue Name <span class="required">*</span></label>
+            <input type="text" id="venue-name" class="form-input" value="Vikram Sarabhai Seminar Hall" placeholder="e.g. Main Auditorium">
+            <div class="form-help">Enter the formal name of the venue on campus.</div>
+          </div>
+
+          <!-- Invalid Field with Inline Error Guidance -->
+          <div class="form-group">
+            <label for="booking-duration" class="form-label">Booking Duration (Hours) <span class="required">*</span></label>
+            <input type="number" id="booking-duration" class="form-input is-invalid" value="14" aria-describedby="duration-error">
+            <div id="duration-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Maximum booking limit is 12 hours. Please adjust your end time to stay within limits.</span>
+            </div>
+          </div>
+
+          <!-- Select Field with Error Guidance -->
+          <div class="form-group">
+            <label for="booking-slot" class="form-label">Requested Time Slot <span class="required">*</span></label>
+            <select id="booking-slot" class="form-select is-invalid" aria-describedby="slot-error">
+              <option value="06:00">06:00 AM &ndash; 08:00 AM (Early Morning)</option>
+              <option value="09:00">09:00 AM &ndash; 11:00 AM</option>
+            </select>
+            <div id="slot-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Selected slot falls outside operating hours (08:00 &ndash; 22:00 IST). Please choose a valid window.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Responsive Table Showcase -->
+    <div class="card" style="margin-bottom: var(--space-8);">
+      <div class="card-header">
+        <h3 style="font-size: var(--text-lg); margin: 0;">4. Responsive Bookings Table</h3>
+      </div>
+      <div class="table-container">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Reference ID</th>
+              <th>Venue</th>
+              <th>Date &amp; Slot</th>
+              <th>Organiser</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 600; font-family: monospace;">#BK-8902</td>
+              <td><strong>Tagore Auditorium</strong> (Cap: 450)</td>
+              <td>24 Oct 2026, 10:00 &ndash; 13:00 IST</td>
+              <td>Robotics Club (Dr. A. Rao)</td>
+              <td><span class="badge badge-approved">Approved</span></td>
+              <td><a href="#manage" class="btn btn-secondary btn-sm">View details</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; font-family: monospace;">#BK-8903</td>
+              <td><strong>Aryabhata Conference Hall</strong></td>
+              <td>25 Oct 2026, 14:00 &ndash; 18:00 IST</td>
+              <td>IEEE Student Chapter</td>
+              <td><span class="badge badge-pending">Pending</span></td>
+              <td><a href="#manage" class="btn btn-primary btn-sm">Review request</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; font-family: monospace;">#BK-8904</td>
+              <td><strong>Open Amphitheatre</strong></td>
+              <td>26 Oct 2026, 18:00 &ndash; 21:00 IST</td>
+              <td>Cultural Affairs Society</td>
+              <td><span class="badge badge-rejected">Rejected</span></td>
+              <td><a href="#manage" class="btn btn-outline btn-sm">View reason</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; font-family: monospace;">#BK-8890</td>
+              <td><strong>Media Centre Studio</strong></td>
+              <td>20 Oct 2026, 09:00 &ndash; 12:00 IST</td>
+              <td>Journalism Guild</td>
+              <td><span class="badge badge-completed">Completed</span></td>
+              <td><a href="#manage" class="btn btn-secondary btn-sm">Archive info</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; font-family: monospace;">#BK-8884</td>
+              <td><strong>Science Block Hall 2</strong></td>
+              <td>19 Oct 2026, 11:00 &ndash; 14:00 IST</td>
+              <td>Debate Society</td>
+              <td><span class="badge badge-cancelled">Cancelled</span></td>
+              <td><a href="#manage" class="btn btn-secondary btn-sm">View logs</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Venue Card Showcase -->
+    <div style="margin-top: var(--space-8);">
+      <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">5. Venue Display Cards</h3>
+      <div class="features-grid">
+        <div class="card card-hoverable">
+          <div style="height: 180px; background: linear-gradient(135deg, #1e1b4b, #312e81); color: white; display: flex; align-items: flex-end; padding: var(--space-4);">
+            <div>
+              <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: var(--space-2);">Auditorium</span>
+              <h4 style="color: white; margin: 0;">Homi Bhabha Grand Hall</h4>
+            </div>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-sm); margin-bottom: var(--space-4);">
+              Equipped with surround sound, dual projection systems, and green rooms. Suitable for conferences and annual festivals.
+            </p>
+            <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-4); display: flex; justify-content: space-between;">
+              <span><strong>Capacity:</strong> 600 seats</span>
+              <span><strong>AV Equipment:</strong> Full Setup</span>
+            </div>
+            <a href="#request" class="btn btn-primary btn-block">Request reservation</a>
+          </div>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="height: 180px; background: linear-gradient(135deg, #064e3b, #047857); color: white; display: flex; align-items: flex-end; padding: var(--space-4);">
+            <div>
+              <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: var(--space-2);">Seminar Hall</span>
+              <h4 style="color: white; margin: 0;">Kalam Innovation Centre</h4>
+            </div>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-sm); margin-bottom: var(--space-4);">
+              Tiered seating seminar hall with high-speed Wi-Fi, motorized projection screens, and video conferencing capabilities.
+            </p>
+            <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-4); display: flex; justify-content: space-between;">
+              <span><strong>Capacity:</strong> 120 seats</span>
+              <span><strong>Wi-Fi:</strong> Dedicated 1 Gbps</span>
+            </div>
+            <a href="#request" class="btn btn-primary btn-block">Request reservation</a>
+          </div>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="height: 180px; background: linear-gradient(135deg, #374151, #1f2937); color: white; display: flex; align-items: flex-end; padding: var(--space-4);">
+            <div>
+              <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: var(--space-2);">Outdoor</span>
+              <h4 style="color: white; margin: 0;">Central Campus Amphitheatre</h4>
+            </div>
+          </div>
+          <div class="card-body">
+            <p style="font-size: var(--text-sm); margin-bottom: var(--space-4);">
+              Open-air amphitheatre with stone bleachers, performance stage, and flood lighting for evening cultural programs.
+            </p>
+            <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-4); display: flex; justify-content: space-between;">
+              <span><strong>Capacity:</strong> 1,200 standing</span>
+              <span><strong>Lighting:</strong> Stadium Floods</span>
+            </div>
+            <a href="#request" class="btn btn-primary btn-block">Request reservation</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,47 @@
+<header class="site-header">
+  <div class="container nav-wrapper">
+    <a href="/" class="brand-logo" aria-label="Campus Venue Booking Home">
+      <div class="brand-icon">V</div>
+      <span>VenueSync</span>
+    </a>
+
+    <nav aria-label="Main Navigation">
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'home' ? 'active' : '' %>">Home</a></li>
+        
+        <% if (!currentUser) { %>
+          <!-- Guest Navigation -->
+          <li><a href="/venues" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'venues' ? 'active' : '' %>">Browse Venues</a></li>
+          <li><a href="/about" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'about' ? 'active' : '' %>">Guidelines</a></li>
+        <% } else if (currentUser.role === 'organiser') { %>
+          <!-- Organiser Navigation -->
+          <li><a href="/venues" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'venues' ? 'active' : '' %>">Explore Venues</a></li>
+          <li><a href="/bookings/my" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'my-bookings' ? 'active' : '' %>">My Bookings</a></li>
+          <li><a href="/bookings/new" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'new-booking' ? 'active' : '' %>">Request Booking</a></li>
+        <% } else if (currentUser.role === 'admin') { %>
+          <!-- Admin (Venue Manager) Navigation -->
+          <li><a href="/admin/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'admin-dashboard' ? 'active' : '' %>">Dashboard</a></li>
+          <li><a href="/admin/venues" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'admin-venues' ? 'active' : '' %>">Manage Venues</a></li>
+          <li><a href="/admin/bookings" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'admin-bookings' ? 'active' : '' %>">Booking Approvals</a></li>
+        <% } %>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <% if (!currentUser) { %>
+        <!-- Guest Actions -->
+        <a href="/auth/login" class="btn btn-secondary btn-sm">Log in</a>
+        <a href="/auth/register" class="btn btn-primary btn-sm">Register as Organiser</a>
+      <% } else { %>
+        <!-- Logged In User State -->
+        <span class="user-tag" title="User Role: <%= currentUser.role %>">
+          <%= currentUser.role === 'admin' ? 'Venue Manager (Admin)' : 'Organiser' %>
+        </span>
+        <span class="text-sm font-bold" style="color: var(--text-main);"><%= currentUser.name || currentUser.email %></span>
+        <form action="/auth/logout" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-secondary btn-sm">Log out</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+</header>

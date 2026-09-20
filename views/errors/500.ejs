@@ -1,0 +1,19 @@
+<section class="container error-hero">
+  <div class="error-code" style="color: #e11d48;">500</div>
+  <h1 class="error-title">An Unexpected Server Error Occurred</h1>
+  <p class="error-description">
+    <%= typeof message !== 'undefined' && message ? message : 'The server encountered an issue while processing your request. Please retry after a few seconds or contact the campus facility administrator.' %>
+  </p>
+  <% if (typeof error !== 'undefined' && error && process.env.NODE_ENV === 'development') { %>
+    <div class="card" style="max-width: 700px; text-align: left; margin: var(--space-4) auto; background-color: #fff1f2; border-color: #fecdd3;">
+      <div class="card-body">
+        <h4 style="color: #9f1239; font-size: var(--text-sm);">Developer Debug Trace</h4>
+        <pre style="overflow-x: auto; font-size: var(--text-xs); color: #881337; margin-top: var(--space-2);"><%= error.stack || error %></pre>
+      </div>
+    </div>
+  <% } %>
+  <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; margin-top: var(--space-4);">
+    <a href="/" class="btn btn-primary">Return to home</a>
+    <a href="javascript:location.reload()" class="btn btn-secondary">Retry request</a>
+  </div>
+</section>
