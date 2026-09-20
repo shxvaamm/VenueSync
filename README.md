@@ -256,3 +256,67 @@ When a booking request conflicts with an existing approved event or maintenance 
    - Every suggestion renders a direct action button: **"Use this slot &rarr;"** or **"Book this venue &rarr;"**.
    - Preserves all entered data (event title, description, attendees, date, time) in query parameters.
    - Full server-side re-validation is executed upon submission to prevent race conditions.
+
+---
+
+## 🚀 Deployment to Render
+
+VenueSync is production-ready for deployment as a Render Web Service.
+
+### 1. Push to GitHub
+Ensure all changes are committed and pushed to your remote repository:
+```bash
+git add .
+git commit -m "feat: prepare application for production deployment"
+git push origin master
+```
+
+### 2. Configure MongoDB Atlas Network Access
+> **IMPORTANT:** Render web services use dynamic IP addresses.
+1. Log in to [MongoDB Atlas](https://cloud.mongodb.com).
+2. Navigate to **Security** &rarr; **Network Access**.
+3. Click **Add IP Address** and choose **Allow Access From Anywhere** (`0.0.0.0/0`).
+4. In **Database Access**, ensure your database user has `readWriteAnyDatabase` or read/write privileges on your target database.
+5. If your database password contains special characters (e.g., `@`, `:`, `/`, `%`, `?`), ensure they are properly URL-encoded (e.g., `@` becomes `%40`).
+
+### 3. Create Web Service on Render
+1. Log in to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** &rarr; **Web Service**.
+3. Connect your GitHub repository.
+4. Configure the service settings:
+   - **Name:** `venuesync` (or your preferred name)
+   - **Region:** Nearest region (e.g., Singapore, Frankfurt, Oregon)
+   - **Branch:** `master`
+   - **Runtime:** `Node`
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Plan:** Free or Starter
+
+### 4. Environment Variables on Render
+Under **Environment Variables**, add the following:
+
+| Variable | Value | Description |
+| :--- | :--- | :--- |
+| `NODE_ENV` | `production` | Enables production mode, secure cookies, and proxy trust |
+| `MONGODB_URI` | `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/venuesync?retryWrites=true&w=majority` | Your MongoDB Atlas connection URI |
+| `SESSION_SECRET` | *(Generate a 32+ char random string)* | Secure session encryption key (must not be default fallback) |
+| `ADMIN_PASSWORD` | *(Your secure admin password)* | Password for the initial seed Admin account (`admin@venue.test`) |
+| `SEED_DEMO` | `false` (or `true`) | Set `false` for clean production, or `true` if you want demo bookings and organisers |
+
+### 5. Initial Production Database Seed
+After your service finishes building and deploying on Render:
+1. In the Render service dashboard, click **Shell** (available on paid plans) or run the seed command locally targeting the Atlas URI:
+   ```bash
+   NODE_ENV=production MONGODB_URI="<your-atlas-uri>" ADMIN_PASSWORD="<admin-password>" npm run seed
+   ```
+2. The seed script is idempotent and ensures all unique and compound indexes are built on Atlas.
+
+### 6. Post-Deploy Smoke-Test Checklist
+- [ ] **HTTPS & Headers:** Navigate to `https://<your-app>.onrender.com` and verify the lock icon (TLS) and Helmet security headers.
+- [ ] **Admin Authentication:** Visit `/auth/login` and log in with `admin@venue.test` and your configured `ADMIN_PASSWORD`.
+- [ ] **Session Persistence:** Log in, reload or open a new browser tab, and confirm your session remains authenticated.
+- [ ] **Organiser Self-Registration:** In a private window, register a new organiser at `/auth/register` and confirm successful redirection.
+- [ ] **Venue Catalog & Filtering:** Browse `/venues`, verify all 6 campus venues are displayed with capacities and facility tags.
+- [ ] **Conflict & Suggestion Test:** Submit an overlapping reservation request and confirm that smart slot and venue suggestions render with pre-fill links.
+- [ ] **Admin Dashboard:** Log in as admin, navigate to `/admin/dashboard`, and verify that utilisation metrics, upcoming schedules, and pending counts render cleanly.
+

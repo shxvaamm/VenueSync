@@ -67,6 +67,23 @@ app.set('layout extractStyles', true);
  * 4. Start HTTP listener
  */
 const startServer = async () => {
+  // Enforce production security invariants
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.MONGODB_URI) {
+      console.error('[Server Fatal] MONGODB_URI environment variable is required in production.');
+      process.exit(1);
+    }
+    const defaultSecrets = [
+      'hackathon_default_secret_event_venue_booking',
+      'venue_sync_secure_development_secret_key_2026',
+      'your_super_secret_session_key'
+    ];
+    if (!process.env.SESSION_SECRET || defaultSecrets.includes(process.env.SESSION_SECRET.trim())) {
+      console.error('[Server Fatal] SESSION_SECRET must be configured with a strong secret in production (cannot use development default).');
+      process.exit(1);
+    }
+  }
+
   // 1. Connect to database
   await connectDB();
 

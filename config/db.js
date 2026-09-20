@@ -1,11 +1,4 @@
-const fs = require('fs');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-
-// Detect local system mongod binary if present for instant startup without re-downloading
-if (!process.env.MONGOMS_SYSTEM_BINARY && fs.existsSync('/opt/homebrew/bin/mongod')) {
-  process.env.MONGOMS_SYSTEM_BINARY = '/opt/homebrew/bin/mongod';
-}
 
 let mongoMemoryServer = null;
 
@@ -23,25 +16,37 @@ const connectDB = async () => {
     process.exit(1);
   }
 
+  // If real database mode is requested but MONGODB_URI is empty
+  if (!useMemoryDB && !mongoUri) {
+    console.error('[Database Error] Real database mode requested (USE_MEMORY_DB is not "true"), but MONGODB_URI is not set in .env. Please verify your .env file is saved with a valid connection string.');
+    process.exit(1);
+  }
+
   try {
     if (mongoUri && !useMemoryDB) {
       // Connect to specified URI (e.g. MongoDB Atlas)
+      // Note: Never log or print mongoUri to protect database credentials
       const conn = await mongoose.connect(mongoUri);
       console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
       return conn;
     } else {
-      // Provision In-Memory MongoDB Server
+      // Lazy load mongodb-memory-server only when in-memory mode is activated
+      const fs = require('fs');
+      if (!process.env.MONGOMS_SYSTEM_BINARY && fs.existsSync('/opt/homebrew/bin/mongod')) {
+        process.env.MONGOMS_SYSTEM_BINARY = '/opt/homebrew/bin/mongod';
+      }
+      const { MongoMemoryServer } = require('mongodb-memory-server');
       mongoMemoryServer = await MongoMemoryServer.create();
       const memoryUri = mongoMemoryServer.getUri();
       
       const conn = await mongoose.connect(memoryUri);
       console.log('Running on IN-MEMORY database. Data resets on restart.');
 
-      // Automatically seed in-memory database
+      // Automatically seed in-memory database only
       try {
         const { seedDatabase } = require('../seed/seed');
         if (typeof seedDatabase === 'function') {
-          await seedDatabase();
+          await seedDatabase({ seedDemo: true });
         }
       } catch (seedErr) {
         console.warn('[Database Seed Warning] Automatic in-memory seeding encountered an issue:', seedErr.message);
