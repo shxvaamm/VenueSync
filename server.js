@@ -99,6 +99,10 @@ const startServer = async () => {
   });
 
   // 5. Mount Application Routes
+  app.use('/auth', require('./routes/auth'));
+  app.use('/venues', require('./routes/venues'));
+  app.use('/bookings', require('./routes/bookings'));
+  app.use('/admin', require('./routes/admin'));
   app.use('/', require('./routes/index'));
 
   // 6. 404 Handler

@@ -1,0 +1,113 @@
+<div class="container container-sm" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+  <div class="card">
+    <div class="card-header" style="text-align: center;">
+      <div class="brand-icon" style="margin: 0 auto var(--space-3) auto;">V</div>
+      <h1 style="font-size: var(--text-2xl); margin-bottom: var(--space-1);">Organiser Registration</h1>
+      <p style="font-size: var(--text-sm); margin: 0;">
+        Create an organiser account to book auditoriums and manage event venues on campus.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <form action="/auth/register" method="POST" novalidate>
+        <!-- Name Field -->
+        <div class="form-group">
+          <label for="name" class="form-label">Full Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-input <%= errors && errors.name ? 'is-invalid' : '' %>"
+            value="<%= formData && formData.name ? formData.name : '' %>"
+            placeholder="e.g. Rahul Sharma"
+            required
+            aria-describedby="<%= errors && errors.name ? 'name-error' : 'name-help' %>"
+          >
+          <% if (errors && errors.name) { %>
+            <div id="name-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.name %></span>
+            </div>
+          <% } else { %>
+            <div id="name-help" class="form-help">Enter your official name as recognized by your student club or faculty.</div>
+          <% } %>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email" class="form-label">Campus Email Address <span class="required">*</span></label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input <%= errors && errors.email ? 'is-invalid' : '' %>"
+            value="<%= formData && formData.email ? formData.email : '' %>"
+            placeholder="name@campus.edu"
+            required
+            aria-describedby="<%= errors && errors.email ? 'email-error' : 'email-help' %>"
+          >
+          <% if (errors && errors.email) { %>
+            <div id="email-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.email %></span>
+            </div>
+          <% } else { %>
+            <div id="email-help" class="form-help">Your email will be used for booking confirmation updates.</div>
+          <% } %>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password" class="form-label">Password <span class="required">*</span></label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input <%= errors && errors.password ? 'is-invalid' : '' %>"
+            placeholder="Minimum 8 characters"
+            required
+            aria-describedby="<%= errors && errors.password ? 'password-error' : 'password-help' %>"
+          >
+          <% if (errors && errors.password) { %>
+            <div id="password-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.password %></span>
+            </div>
+          <% } else { %>
+            <div id="password-help" class="form-help">Must be at least 8 characters long.</div>
+          <% } %>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Confirm Password <span class="required">*</span></label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            class="form-input <%= errors && errors.confirmPassword ? 'is-invalid' : '' %>"
+            placeholder="Re-type your password"
+            required
+            aria-describedby="<%= errors && errors.confirmPassword ? 'confirm-error' : '' %>"
+          >
+          <% if (errors && errors.confirmPassword) { %>
+            <div id="confirm-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.confirmPassword %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-6);">
+          Create organiser account
+        </button>
+      </form>
+    </div>
+
+    <div class="card-footer" style="text-align: center;">
+      <p style="font-size: var(--text-sm); margin: 0;">
+        Already have an organiser account? <a href="/auth/login" style="font-weight: 700;">Log in here</a>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,249 @@
+<div class="container container-sm" style="padding-top: var(--space-8); padding-bottom: var(--space-16);">
+  <div style="margin-bottom: var(--space-6);">
+    <a href="/venues" class="btn btn-secondary btn-sm">&larr; Back to venues</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="hero-pill" style="margin-bottom: var(--space-2);">&#9679; Reservation Request</span>
+      <h1 style="font-size: var(--text-2xl); margin-bottom: var(--space-1);">Request Venue Booking</h1>
+      <p style="font-size: var(--text-sm); margin: 0; color: var(--text-muted);">
+        Submit your event schedule for approval. Reservations are verified in real-time for operating hours and scheduling conflicts.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <form action="/bookings" method="POST" id="booking-form" novalidate>
+        <!-- Venue Selection -->
+        <div class="form-group">
+          <label for="venue-select" class="form-label">Select Campus Venue <span class="required">*</span></label>
+          <select
+            id="venue-select"
+            name="venue"
+            class="form-select <%= errors && errors.venue ? 'is-invalid' : '' %>"
+            required
+            aria-describedby="<%= errors && errors.venue ? 'venue-error' : '' %>"
+          >
+            <% venues.forEach(function(v) { %>
+              <% const isSelected = (formData && formData.venue && formData.venue.toString() === v._id.toString()) || (selectedVenue && selectedVenue._id.toString() === v._id.toString()); %>
+              <option
+                value="<%= v._id %>"
+                data-rate="<%= v.hourlyRate %>"
+                data-capacity="<%= v.capacity %>"
+                <%= isSelected ? 'selected' : '' %>
+              >
+                <%= v.name %> (Cap: <%= v.capacity %> &bull; ₹<%= v.hourlyRate %>/hr)
+              </option>
+            <% }); %>
+          </select>
+          <% if (errors && errors.venue) { %>
+            <div id="venue-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.venue %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Event Name -->
+        <div class="form-group">
+          <label for="eventName" class="form-label">Event Title <span class="required">*</span></label>
+          <input
+            type="text"
+            id="eventName"
+            name="eventName"
+            class="form-input <%= errors && errors.eventName ? 'is-invalid' : '' %>"
+            value="<%= formData && formData.eventName ? formData.eventName : '' %>"
+            placeholder="e.g. Annual Robotics Symposium 2026"
+            required
+            aria-describedby="<%= errors && errors.eventName ? 'eventName-error' : '' %>"
+          >
+          <% if (errors && errors.eventName) { %>
+            <div id="eventName-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.eventName %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <!-- Attendees -->
+          <div class="form-group">
+            <label for="attendees" class="form-label">Expected Attendees <span class="required">*</span></label>
+            <input
+              type="number"
+              id="attendees"
+              name="attendees"
+              min="1"
+              class="form-input <%= errors && errors.attendees ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.attendees ? formData.attendees : '' %>"
+              placeholder="e.g. 80"
+              required
+              aria-describedby="<%= errors && errors.attendees ? 'attendees-error' : '' %>"
+            >
+            <% if (errors && errors.attendees) { %>
+              <div id="attendees-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.attendees %></span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Date -->
+          <div class="form-group">
+            <label for="date" class="form-label">Event Date (IST) <span class="required">*</span></label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              class="form-input <%= errors && errors.date ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.date ? formData.date : '' %>"
+              required
+              aria-describedby="<%= errors && errors.date ? 'date-error' : '' %>"
+            >
+            <% if (errors && errors.date) { %>
+              <div id="date-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.date %></span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <!-- Start Time -->
+          <div class="form-group">
+            <label for="startTime" class="form-label">Start Time (IST) <span class="required">*</span></label>
+            <input
+              type="time"
+              id="startTime"
+              name="startTime"
+              min="<%= operatingHours.open %>"
+              max="<%= operatingHours.close %>"
+              class="form-input <%= errors && errors.startTime ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.startTime ? formData.startTime : '10:00' %>"
+              required
+              aria-describedby="<%= errors && errors.startTime ? 'startTime-error' : '' %>"
+            >
+            <% if (errors && errors.startTime) { %>
+              <div id="startTime-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.startTime %></span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- End Time -->
+          <div class="form-group">
+            <label for="endTime" class="form-label">End Time (IST) <span class="required">*</span></label>
+            <input
+              type="time"
+              id="endTime"
+              name="endTime"
+              min="<%= operatingHours.open %>"
+              max="<%= operatingHours.close %>"
+              class="form-input <%= errors && errors.endTime ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.endTime ? formData.endTime : '13:00' %>"
+              required
+              aria-describedby="<%= errors && errors.endTime ? 'endTime-error' : '' %>"
+            >
+            <% if (errors && errors.endTime) { %>
+              <div id="endTime-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.endTime %></span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">Event Description &amp; Technical Requirements</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="2"
+            class="form-textarea"
+            placeholder="Briefly state event agenda, guest requirements, or technical support needed..."
+          ><%= formData && formData.description ? formData.description : '' %></textarea>
+        </div>
+
+        <!-- Live Cost Calculation Card (Vanilla JS Powered) -->
+        <div class="card" style="background-color: var(--primary-50); border: 1px solid var(--primary-200); margin-bottom: var(--space-6);">
+          <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4);">
+            <div>
+              <span style="font-size: var(--text-xs); color: var(--primary-700); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block;">
+                Live Cost Estimation
+              </span>
+              <span id="cost-breakdown" style="font-size: var(--text-sm); color: var(--text-muted);">
+                Calculating slot duration...
+              </span>
+            </div>
+            <div>
+              <span id="total-cost-badge" class="badge" style="font-size: var(--text-base); padding: 0.4rem 0.8rem; background: var(--primary); color: white;">
+                ₹0
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          Submit booking request
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Small Vanilla JS for Live Cost Estimation -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const venueSelect = document.getElementById('venue-select');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    const costBreakdownEl = document.getElementById('cost-breakdown');
+    const totalCostBadgeEl = document.getElementById('total-cost-badge');
+
+    function updateLiveEstimate() {
+      if (!venueSelect || !startTimeInput || !endTimeInput) return;
+
+      const selectedOption = venueSelect.options[venueSelect.selectedIndex];
+      if (!selectedOption) return;
+
+      const hourlyRate = parseFloat(selectedOption.getAttribute('data-rate') || '0');
+      const start = startTimeInput.value;
+      const end = endTimeInput.value;
+
+      if (!start || !end) {
+        costBreakdownEl.textContent = 'Please specify start and end time.';
+        totalCostBadgeEl.textContent = '₹0';
+        return;
+      }
+
+      const [startH, startM] = start.split(':').map(Number);
+      const [endH, endM] = end.split(':').map(Number);
+
+      const startTotalMinutes = startH * 60 + startM;
+      const endTotalMinutes = endH * 60 + endM;
+
+      const durationMinutes = endTotalMinutes - startTotalMinutes;
+      if (durationMinutes <= 0) {
+        costBreakdownEl.textContent = 'End time must be after start time.';
+        totalCostBadgeEl.textContent = '₹0';
+        return;
+      }
+
+      const durationHours = durationMinutes / 60;
+      const totalCost = Math.round(durationHours * hourlyRate);
+
+      costBreakdownEl.textContent = `${durationHours.toFixed(1)} hr(s) @ ₹${hourlyRate}/hr`;
+      totalCostBadgeEl.textContent = `₹${totalCost}`;
+    }
+
+    venueSelect.addEventListener('change', updateLiveEstimate);
+    startTimeInput.addEventListener('input', updateLiveEstimate);
+    endTimeInput.addEventListener('input', updateLiveEstimate);
+
+    // Initial calculation on page load
+    updateLiveEstimate();
+  });
+</script>

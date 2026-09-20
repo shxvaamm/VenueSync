@@ -13,11 +13,4 @@ router.get('/404-preview', (req, res, next) => {
   next(); // Passes to 404 handler
 });
 
-// Auth Logout helper for role test toggle
-router.post('/auth/logout', (req, res) => {
-  delete req.session.currentUser;
-  req.flash('info_msg', 'You have been logged out successfully.');
-  res.redirect('/');
-});
-
 module.exports = router;

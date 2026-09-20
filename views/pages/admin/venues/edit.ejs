@@ -1,0 +1,216 @@
+<div class="container container-sm" style="padding-top: var(--space-8); padding-bottom: var(--space-16);">
+  <div style="margin-bottom: var(--space-6);">
+    <a href="/admin/venues" class="btn btn-secondary btn-sm">&larr; Back to all venues</a>
+  </div>
+
+  <!-- Venue Edit Details -->
+  <div class="card" style="margin-bottom: var(--space-8);">
+    <div class="card-header">
+      <h1 style="font-size: var(--text-2xl); margin-bottom: var(--space-1);">Edit Venue: <%= venue.name %></h1>
+      <p style="font-size: var(--text-sm); margin: 0;">
+        Update capacity, pricing, equipment, and active publishing status.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <form action="/admin/venues/<%= venue._id %>?_method=PUT" method="POST" novalidate>
+        <!-- Name -->
+        <div class="form-group">
+          <label for="name" class="form-label">Venue Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-input <%= errors && errors.name ? 'is-invalid' : '' %>"
+            value="<%= formData && formData.name ? formData.name : venue.name %>"
+            required
+            aria-describedby="<%= errors && errors.name ? 'name-error' : '' %>"
+          >
+          <% if (errors && errors.name) { %>
+            <div id="name-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.name %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <!-- Capacity -->
+          <div class="form-group">
+            <label for="capacity" class="form-label">Seating Capacity <span class="required">*</span></label>
+            <input
+              type="number"
+              id="capacity"
+              name="capacity"
+              min="1"
+              class="form-input <%= errors && errors.capacity ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.capacity !== undefined ? formData.capacity : venue.capacity %>"
+              required
+              aria-describedby="<%= errors && errors.capacity ? 'capacity-error' : '' %>"
+            >
+            <% if (errors && errors.capacity) { %>
+              <div id="capacity-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.capacity %></span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Hourly Rate -->
+          <div class="form-group">
+            <label for="hourlyRate" class="form-label">Hourly Rate (₹) <span class="required">*</span></label>
+            <input
+              type="number"
+              id="hourlyRate"
+              name="hourlyRate"
+              min="0"
+              step="50"
+              class="form-input <%= errors && errors.hourlyRate ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.hourlyRate !== undefined ? formData.hourlyRate : venue.hourlyRate %>"
+              required
+              aria-describedby="<%= errors && errors.hourlyRate ? 'rate-error' : '' %>"
+            >
+            <% if (errors && errors.hourlyRate) { %>
+              <div id="rate-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.hourlyRate %></span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">Venue Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="3"
+            class="form-textarea"
+          ><%= formData && formData.description !== undefined ? formData.description : venue.description %></textarea>
+        </div>
+
+        <!-- Facilities Checkboxes -->
+        <div class="form-group">
+          <label class="form-label">Available Facilities &amp; Equipment</label>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2); margin-top: var(--space-2);">
+            <% const currentFacs = (formData && formData.facilities) ? formData.facilities : venue.facilities; %>
+            <% allFacilities.forEach(function(fac) { %>
+              <% const isChecked = currentFacs && currentFacs.includes(fac); %>
+              <label style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); cursor: pointer; padding: var(--space-1);">
+                <input
+                  type="checkbox"
+                  name="facilities"
+                  value="<%= fac %>"
+                  <%= isChecked ? 'checked' : '' %>
+                >
+                <span style="text-transform: capitalize;"><%= fac %></span>
+              </label>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Active Status Toggle -->
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+            <input
+              type="checkbox"
+              name="isActive"
+              <%= (formData && formData.isActive !== undefined ? (formData.isActive === true || formData.isActive === 'on' || formData.isActive === 'true') : venue.isActive) ? 'checked' : '' %>
+            >
+            <span class="form-label" style="margin: 0;">Publish as Active</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-6);">
+          Update campus venue
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Maintenance Blocks Section -->
+  <div class="card">
+    <div class="card-header">
+      <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-1);">Scheduled Maintenance Blocks</h2>
+      <p style="font-size: var(--text-sm); margin: 0;">
+        Block out date and time intervals during which the venue cannot be reserved due to repairs, calibration, or routine upkeep.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <!-- Existing Blocks -->
+      <% if (venue.blockedDates && venue.blockedDates.length > 0) { %>
+        <div class="table-container" style="margin-bottom: var(--space-6);">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Time Window (IST)</th>
+                <th>Maintenance Reason</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% venue.blockedDates.forEach(function(block) { %>
+                <tr>
+                  <td>
+                    <strong><%= formatISTDateTime(block.from) %></strong>
+                    <br>&rarr; <%= formatISTDateTime(block.to) %>
+                  </td>
+                  <td><%= block.reason || 'General maintenance' %></td>
+                  <td>
+                    <form action="/admin/venues/<%= venue._id %>/maintenance/<%= block._id %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Remove this maintenance block? The slot will immediately become available for booking.');">
+                      <button type="submit" class="btn btn-danger btn-sm">Remove block</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <p style="font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-6);">
+          No maintenance blocks currently active for this venue.
+        </p>
+      <% } %>
+
+      <!-- Add Block Form -->
+      <div style="background-color: var(--bg-surface-alt); padding: var(--space-6); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-4);">Add New Maintenance Window</h3>
+        <form action="/admin/venues/<%= venue._id %>/maintenance" method="POST">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+            <!-- From -->
+            <div class="form-group">
+              <label for="fromDate" class="form-label">Start Date (IST) <span class="required">*</span></label>
+              <input type="date" id="fromDate" name="fromDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="fromTime" class="form-label">Start Time (IST) <span class="required">*</span></label>
+              <input type="time" id="fromTime" name="fromTime" class="form-input" value="08:00" required>
+            </div>
+
+            <!-- To -->
+            <div class="form-group">
+              <label for="toDate" class="form-label">End Date (IST) <span class="required">*</span></label>
+              <input type="date" id="toDate" name="toDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="toTime" class="form-label">End Time (IST) <span class="required">*</span></label>
+              <input type="time" id="toTime" name="toTime" class="form-input" value="14:00" required>
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div class="form-group">
+            <label for="reason" class="form-label">Maintenance Description / Reason</label>
+            <input type="text" id="reason" name="reason" class="form-input" placeholder="e.g. Projector lamp replacement, floor polishing...">
+          </div>
+
+          <button type="submit" class="btn btn-secondary btn-block">
+            Schedule maintenance block
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

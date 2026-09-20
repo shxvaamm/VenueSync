@@ -1,0 +1,133 @@
+<div class="container container-sm" style="padding-top: var(--space-8); padding-bottom: var(--space-16);">
+  <div style="margin-bottom: var(--space-6);">
+    <a href="/admin/venues" class="btn btn-secondary btn-sm">&larr; Back to all venues</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h1 style="font-size: var(--text-2xl); margin-bottom: var(--space-1);">Add New Campus Venue</h1>
+      <p style="font-size: var(--text-sm); margin: 0;">
+        Register a new auditorium, hall, or facility into the campus booking directory.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <form action="/admin/venues" method="POST" novalidate>
+        <!-- Venue Name -->
+        <div class="form-group">
+          <label for="name" class="form-label">Venue Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-input <%= errors && errors.name ? 'is-invalid' : '' %>"
+            value="<%= formData && formData.name ? formData.name : '' %>"
+            placeholder="e.g. Vikram Sarabhai Seminar Hall"
+            required
+            aria-describedby="<%= errors && errors.name ? 'name-error' : '' %>"
+          >
+          <% if (errors && errors.name) { %>
+            <div id="name-error" class="form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><%= errors.name %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <!-- Capacity -->
+          <div class="form-group">
+            <label for="capacity" class="form-label">Seating Capacity <span class="required">*</span></label>
+            <input
+              type="number"
+              id="capacity"
+              name="capacity"
+              min="1"
+              class="form-input <%= errors && errors.capacity ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.capacity ? formData.capacity : '' %>"
+              placeholder="e.g. 150"
+              required
+              aria-describedby="<%= errors && errors.capacity ? 'capacity-error' : '' %>"
+            >
+            <% if (errors && errors.capacity) { %>
+              <div id="capacity-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.capacity %></span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Hourly Rate -->
+          <div class="form-group">
+            <label for="hourlyRate" class="form-label">Hourly Rate (₹) <span class="required">*</span></label>
+            <input
+              type="number"
+              id="hourlyRate"
+              name="hourlyRate"
+              min="0"
+              step="50"
+              class="form-input <%= errors && errors.hourlyRate ? 'is-invalid' : '' %>"
+              value="<%= formData && formData.hourlyRate !== undefined ? formData.hourlyRate : '0' %>"
+              placeholder="0 for free campus facilities"
+              required
+              aria-describedby="<%= errors && errors.hourlyRate ? 'rate-error' : '' %>"
+            >
+            <% if (errors && errors.hourlyRate) { %>
+              <div id="rate-error" class="form-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><%= errors.hourlyRate %></span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">Venue Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="3"
+            class="form-textarea"
+            placeholder="Outline venue features, AV capabilities, and suitable event types..."
+          ><%= formData && formData.description ? formData.description : '' %></textarea>
+        </div>
+
+        <!-- Facilities Checkboxes -->
+        <div class="form-group">
+          <label class="form-label">Available Facilities &amp; Equipment</label>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2); margin-top: var(--space-2);">
+            <% allFacilities.forEach(function(fac) { %>
+              <% const isChecked = formData && formData.facilities && formData.facilities.includes(fac); %>
+              <label style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); cursor: pointer; padding: var(--space-1);">
+                <input
+                  type="checkbox"
+                  name="facilities"
+                  value="<%= fac %>"
+                  <%= isChecked ? 'checked' : '' %>
+                >
+                <span style="text-transform: capitalize;"><%= fac %></span>
+              </label>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Active Toggle -->
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+            <input
+              type="checkbox"
+              name="isActive"
+              <%= !formData || formData.isActive === undefined || formData.isActive === true || formData.isActive === 'on' || formData.isActive === 'true' ? 'checked' : '' %>
+            >
+            <span class="form-label" style="margin: 0;">Publish as Active (Immediate booking availability)</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-6);">
+          Save campus venue
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

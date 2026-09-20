@@ -1,0 +1,93 @@
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-16);">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8);">
+    <div>
+      <span class="hero-pill" style="margin-bottom: var(--space-2);">&#9679; Campus Venue Administration</span>
+      <h1 style="margin-bottom: var(--space-2);">Manage Campus Venues</h1>
+      <p style="margin: 0; color: var(--text-muted);">
+        Configure venue profiles, hourly pricing, facility equipment, and active availability.
+      </p>
+    </div>
+    <div>
+      <a href="/admin/venues/new" class="btn btn-primary">Add new campus venue</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Venue Name</th>
+            <th>Capacity</th>
+            <th>Hourly Rate</th>
+            <th>Equipment &amp; Facilities</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (venues && venues.length > 0) { %>
+            <% venues.forEach(function(venue) { %>
+              <tr>
+                <td>
+                  <strong><%= venue.name %></strong>
+                  <% if (venue.blockedDates && venue.blockedDates.length > 0) { %>
+                    <span class="badge badge-pending" style="display: block; width: fit-content; margin-top: var(--space-1); font-size: 0.7rem;">
+                      <%= venue.blockedDates.length %> Maintenance Block(s)
+                    </span>
+                  <% } %>
+                </td>
+                <td><%= venue.capacity %> Persons</td>
+                <td><strong>₹<%= venue.hourlyRate %></strong> / hr</td>
+                <td style="max-width: 300px;">
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <% if (venue.facilities && venue.facilities.length > 0) { %>
+                      <% venue.facilities.forEach(function(fac) { %>
+                        <span class="badge" style="background: var(--bg-surface-alt); color: var(--text-main); font-size: 0.7rem; border: 1px solid var(--border-light);">
+                          <%= fac %>
+                        </span>
+                      <% }); %>
+                    <% } else { %>
+                      <span class="text-soft text-xs">Standard Room</span>
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  <% if (venue.isActive) { %>
+                    <span class="badge badge-approved">Active</span>
+                  <% } else { %>
+                    <span class="badge badge-cancelled">Inactive</span>
+                  <% } %>
+                </td>
+                <td>
+                  <div style="display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;">
+                    <a href="/admin/venues/<%= venue._id %>/edit" class="btn btn-secondary btn-sm">Edit / Maintain</a>
+                    
+                    <!-- Toggle Active Form -->
+                    <form action="/admin/venues/<%= venue._id %>/toggle-status" method="POST" style="display: inline;">
+                      <button type="submit" class="btn btn-outline btn-sm">
+                        <%= venue.isActive ? 'Deactivate' : 'Activate' %>
+                      </button>
+                    </form>
+
+                    <!-- Delete Form with Confirmation Step -->
+                    <form action="/admin/venues/<%= venue._id %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to permanently delete venue \'<%= venue.name %>\'? This action cannot be undone.');">
+                      <button type="submit" class="btn btn-danger btn-sm">Delete venue</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" style="text-align: center; padding: var(--space-12);">
+                <p style="margin-bottom: var(--space-4);">No venues found in system inventory.</p>
+                <a href="/admin/venues/new" class="btn btn-primary">Add your first venue</a>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

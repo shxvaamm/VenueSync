@@ -7,5 +7,17 @@ module.exports = {
   bookingLimits: {
     minHours: 1,
     maxHours: 12
-  }
+  },
+  facilities: [
+    'projector',
+    'sound system',
+    'AC',
+    'stage',
+    'WiFi',
+    'podium',
+    'whiteboard',
+    'parking',
+    'catering area',
+    'live-stream setup'
+  ]
 };

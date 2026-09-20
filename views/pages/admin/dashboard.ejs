@@ -1,0 +1,51 @@
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12);">
+  <div style="margin-bottom: var(--space-8); display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-4);">
+    <div>
+      <span class="hero-pill" style="margin-bottom: var(--space-2);">&#9679; Venue Manager Console</span>
+      <h1 style="margin-bottom: var(--space-2);">Administrator Dashboard</h1>
+      <p style="margin: 0; color: var(--text-muted);">
+        Oversee campus venue allocations, review pending booking submissions, and resolve scheduling conflicts.
+      </p>
+    </div>
+    <div>
+      <span class="badge badge-completed" style="padding: 0.5rem 1rem; font-size: var(--text-sm);">
+        Logged in as Admin: <%= currentUser.name %>
+      </span>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="stats-grid" style="margin-top: 0; margin-bottom: var(--space-8);">
+    <div class="stat-item">
+      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.pendingCount !== undefined) ? stats.pendingCount : 0 %></div>
+      <div class="stat-label">Pending Approval Requests</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.venuesCount !== undefined) ? stats.venuesCount : 0 %></div>
+      <div class="stat-label">Total Campus Venues</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.approvedCount !== undefined) ? stats.approvedCount : 0 %></div>
+      <div class="stat-label">Approved Reservations</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value"><%= (typeof stats !== 'undefined' && stats.totalBookings !== undefined) ? stats.totalBookings : 0 %></div>
+      <div class="stat-label">Total Lifetime Bookings</div>
+    </div>
+  </div>
+
+  <!-- Quick Admin Actions -->
+  <div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: var(--text-lg); margin: 0;">Venue Manager Operational Actions</h3>
+      <span class="badge badge-approved">System Active</span>
+    </div>
+    <div class="card-body">
+      <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
+        <a href="/admin/venues" class="btn btn-primary">Manage campus venues</a>
+        <a href="/admin/venues/new" class="btn btn-secondary">Add new venue</a>
+        <a href="/venues" class="btn btn-outline">Preview public catalog</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<section class="container error-hero">
+  <div class="error-code" style="color: #d97706;">403</div>
+  <h1 class="error-title">Access Forbidden</h1>
+  <p class="error-description">
+    <%= typeof message !== 'undefined' && message ? message : 'You do not have the required role permissions to view this resource. This area is reserved for Venue Managers (Administrators). Please return to your account area or switch accounts.' %>
+  </p>
+  <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;">
+    <% if (currentUser && currentUser.role === 'organiser') { %>
+      <a href="/venues" class="btn btn-primary">Go to venues catalog</a>
+    <% } else { %>
+      <a href="/" class="btn btn-primary">Return to home</a>
+    <% } %>
+    <a href="javascript:history.back()" class="btn btn-secondary">Go back</a>
+  </div>
+</section>
